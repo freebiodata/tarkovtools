@@ -1,0 +1,290 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Faq from '../../components/Faq.astro';
+import TrustBlock from '../../components/TrustBlock.astro';
+import { site } from '../../data/site';
+import { ammoByCaliber, caliberOrder } from '../../data/ammo';
+import { bodyArmor, armorPlates } from '../../data/armor';
+
+const title = 'Tarkov Penetration Calculator: Ammo vs Armor';
+const description =
+  'Exact penetration chance for any round vs any armor: the datamined community formula with durability and class modeling. Free, in-browser.';
+
+const jsonLd = [
+  {
+    '@type': 'WebApplication',
+    '@id': `${site.url}/penetration-calculator/#app`,
+    name: 'Tarkov Penetration Calculator',
+    url: `${site.url}/penetration-calculator/`,
+    description:
+      'Penetration chance calculator for Escape from Tarkov: ammo vs armor class with durability modeling.',
+    applicationCategory: 'GameApplication',
+    operatingSystem: 'Any',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  },
+];
+
+const breadcrumbs = [
+  { name: 'Home', href: '/' },
+  { name: 'All tools', href: '/tools/' },
+  { name: 'Penetration calculator' },
+];
+
+const faq = [
+  {
+    q: 'How is penetration chance calculated?',
+    a: 'Using the community-datamined formula (cross-validated in independent open-source projects): <code>A = (121 − 5000 ÷ (45 + 2d)) × class ÷ 10</code>, where d is remaining durability percent. If your penetration exceeds A, chance rises steeply (capped at 95% in practice); between A−15 and A there is a partial chance curve; below A−15 the round cannot penetrate. Enter your exact durability for precision.',
+  },
+  {
+    q: 'Why does armor durability matter so much?',
+    a: 'A damaged plate protects less. At 50% durability the threshold A drops, so the same round gains penetration chance. This is why spraying a plate with high-armor-damage rounds "opens" it up for your next shots, the calculator shows both the chance now and shots to break.',
+  },
+  {
+    q: 'What about blunt damage?',
+    a: 'When a round does not penetrate, a small amount of blunt damage still passes (depending on the armor\'s blunt throughput and your pen value). It is usually minor for torso armor but relevant for some setups. The model estimates it; treat as approximate.',
+  },
+  {
+    q: 'Which armor should I pick in the calculator?',
+    a: 'Use the armor the enemy is likely wearing: class 4 (Korund, Trooper, etc.) for budget kits, class 5 (Slick, Gzhel-K...) for mid, class 6 (Zabralo, Slick plate...) for chads and bosses. The armor list is searchable; current durability defaults to 100%.',
+  },
+  {
+    q: 'Is this exact?',
+    a: 'It is the widely-used community approximation of the game\'s penetration roll, the same math trusted by mainstream Tarkov tools. The game also hides some implementation details (penetration deviation, angle quirks); published limits are on the <a href="/methodology/">methodology page</a>.',
+  },
+];
+---
+
+<Base
+  title={title}
+  description={description}
+  jsonLd={jsonLd}
+  breadcrumbs={breadcrumbs}
+  canonical="/penetration-calculator/"
+>
+  <div class="wrap">
+    <Breadcrumbs items={breadcrumbs} />
+
+    <div class="hero">
+      <h1>Penetration Calculator</h1>
+      <p class="value-line">
+        Will it pen? Pick a round and the armor you expect, set the durability, and get the exact
+        chance from the datamined community formula, plus shots-to-break modeling.
+      </p>
+      <ul class="trust-microline">
+        <li class="badge badge-green">Datamined formula</li>
+        <li class="badge">175 rounds · 83 armors</li>
+        <li class="badge badge-amber">Free · No sign-up</li>
+      </ul>
+    </div>
+
+    <section class="tool" aria-labelledby="tool-heading">
+      <h2 id="tool-heading" class="visually-hidden">Penetration calculator tool</h2>
+
+      <div class="tool-grid cols-2">
+        <div>
+          <div class="field">
+            <label for="cal">Caliber</label>
+            <select id="cal">
+              {caliberOrder.map((c, i) => (
+                <option value={c} selected={i === 0}>{c}</option>
+              ))}
+            </select>
+          </div>
+          <div class="field">
+            <label for="round">Round</label>
+            <select id="round"></select>
+          </div>
+          <div class="field">
+            <label for="armor-select">Armor (body armor + plates)</label>
+            <select id="armor-select">
+              <optgroup label="Body armor">
+                {bodyArmor.filter((a) => a.durability).map((a) => (
+                  <option value={`b:${a.name}`}>{a.name} (class {a.cls}, dur {a.durability})</option>
+                ))}
+              </optgroup>
+              <optgroup label="Armor plates">
+                {armorPlates.filter((a) => a.durability).map((a) => (
+                  <option value={`p:${a.name}`}>{a.name} (class {a.cls}, dur {a.durability})</option>
+                ))}
+              </optgroup>
+            </select>
+          </div>
+          <div class="field">
+            <label for="dur">Current durability</label>
+            <input type="number" id="dur" inputmode="numeric" min="0" max="400" step="1" value="100" />
+            <span class="helper" id="dur-hint">0 to max. Percent updates automatically below.</span>
+            <span class="error" role="alert">Enter durability within the armor's range.</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="result-panel" style="margin-top:0;min-height:250px">
+            <div class="small muted">Penetration chance</div>
+            <div class="result-value" id="chance">-</div>
+            <div class="result-meta">
+              <div class="kv"><div class="k">Armor threshold (A)</div><div class="v" id="out-a">-</div></div>
+              <div class="kv"><div class="k">Your pen value</div><div class="v" id="out-pen">-</div></div>
+              <div class="kv"><div class="k">Durability left</div><div class="v" id="out-dur">-</div></div>
+              <div class="kv"><div class="k">Shots to break armor</div><div class="v" id="out-break">-</div></div>
+              <div class="kv"><div class="k">Damage if it pens</div><div class="v" id="out-dmg">-</div></div>
+              <div class="kv"><div class="k">Expected damage/hit</div><div class="v" id="out-exp">-</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="how">
+      <h2 id="how">The formula, in plain terms</h2>
+      <p>
+        Your round's <strong>penetration power</strong> is compared to a threshold that depends on the
+        armor's <strong>class</strong> and <strong>remaining durability</strong>:
+      </p>
+      <p><code>A = (121 − 5000 ÷ (45 + 2 × durability%)) × class ÷ 10</code></p>
+      <ul>
+        <li><strong>pen ≥ A:</strong> you penetrate reliably; chance climbs toward ~95%</li>
+        <li><strong>A − 15 &lt; pen &lt; A:</strong> partial chance (the gritty middle ground)</li>
+        <li><strong>pen ≤ A − 15:</strong> no penetration, only blunt/minor damage</li>
+      </ul>
+      <p class="small muted">
+        Cross-validated in independent open-source projects; the model and its limits are documented on
+        the <a href="/methodology/">methodology page</a>.
+      </p>
+    </section>
+
+    <Faq items={faq} />
+
+    <TrustBlock>
+      <p class="mb-0">
+        <strong>Note:</strong> helmets have ricochet mechanics and some armors have zones/plate splits;
+        this calculator models a single plate/armor layer. Use it as the combat-planning baseline, not a
+        battle simulator.
+      </p>
+    </TrustBlock>
+
+    <section class="section" aria-labelledby="related">
+      <h2 id="related">Related tools</h2>
+      <ul class="related-grid" style="list-style:none;padding:0">
+        <li><a class="tool-card" href="/ammo-chart/"><span class="tc-title">Ammo Chart</span><p class="tc-desc">All 175 rounds: damage, pen, armor dmg, speed.</p></a></li>
+        <li><a class="tool-card" href="/ammo-solver/"><span class="tc-title">Ammo Solver</span><p class="tc-desc">What to bring against the armor you expect.</p></a></li>
+      </ul>
+    </section>
+  </div>
+
+  <script define:vars={{ AMMO: ammoByCaliber, ORDER: caliberOrder, ARMOR: [...bodyArmor.map((a) => ({ ...a, kind: 'b' })), ...armorPlates.map((a) => ({ ...a, kind: 'p' }))] }}>
+    const $ = (id) => document.getElementById(id);
+
+    const calSel = $('cal');
+    const roundSel = $('round');
+    const armorSel = $('armor-select');
+    const durInput = $('dur');
+
+    // --- ballistics math (mirror of lib/ballistics.ts) ---
+    function factorA(cls, d) {
+      const dd = Math.max(0, Math.min(100, d));
+      return (121 - 5000 / (45 + dd * 2)) * cls * 0.1;
+    }
+    function penChance(cls, pen, d) {
+      if (d <= 0) return { pct: 100, a: 0 };
+      const a = factorA(cls, d);
+      if (a <= pen) return { pct: Math.min(100, Math.max(0, 100 + pen / (0.9 * a - pen))), a };
+      if (a - 15 < pen && pen < a) return { pct: Math.min(100, Math.max(0, 0.4 * Math.pow(a - pen - 15, 2))), a };
+      return { pct: 0, a };
+    }
+    const DESTR = { Aramid: 0.1875, UHMWPE: 0.3375, Combined: 0.375, Titan: 0.4125, Aluminium: 0.45, ArmoredSteel: 0.525, Ceramic: 0.55, Glass: 0.6 };
+    function armorDamagePerShot(pen, cls, armorDmg, material, penHappened) {
+      const destr = DESTR[material] ?? 0.5;
+      const raw0 = (pen / cls) * 10;
+      let clamped = penHappened ? Math.min(Math.max(raw0, 0.5), 0.9) : Math.min(Math.max(raw0, 0.6), 1.1);
+      const raw = pen * (armorDmg / 100) * clamped * destr;
+      return Math.max(raw, 1);
+    }
+    function penDamageMult(pen, cls, d) {
+      const a = factorA(cls, d);
+      const arr = [0.6, pen / (a + 12), 1].sort((x, y) => x - y);
+      return arr[1];
+    }
+    function expectedDamage(dmg, pen, cls, d, blunt = 20) {
+      const { pct } = penChance(cls, pen, d);
+      const ch = pct / 100;
+      const mult = penDamageMult(pen, cls, d);
+      const a = factorA(cls, d);
+      const arr = [0.2, 1 - 0.03 * (a - pen), 1].sort((x, y) => x - y);
+      const bluntDmg = (blunt / 100) * arr[1] * dmg;
+      return dmg * mult * ch + bluntDmg * (1 - ch);
+    }
+
+    function fillRounds() {
+      const cal = calSel.value;
+      const rounds = AMMO[cal] || [];
+      roundSel.innerHTML = rounds.map((r) => `<option value="${r.name}">${r.name} (dmg ${r.dmg} / pen ${r.pen})</option>`).join('');
+      // default select highest pen
+      if (rounds.length) roundSel.value = rounds[rounds.length - 1].name;
+    }
+
+    function getRound() {
+      const cal = calSel.value;
+      const name = roundSel.value;
+      return (AMMO[cal] || []).find((r) => r.name === name);
+    }
+
+    function getArmor() {
+      const v = armorSel.value;
+      const [kind, name] = [v.slice(0, 1), v.slice(2)];
+      return ARMOR.find((a) => a.name === name && a.kind === kind);
+    }
+
+    function compute() {
+      const round = getRound();
+      const armor = getArmor();
+      if (!round || !armor) return;
+      const max = armor.durability;
+      let dur = parseFloat(durInput.value);
+      if (!Number.isFinite(dur)) dur = max;
+      dur = Math.max(0, Math.min(max, dur));
+      durInput.max = String(max);
+      const dPct = (dur / max) * 100;
+
+      const { pct, a } = penChance(armor.cls, round.pen, dPct);
+      const mult = penDamageMult(round.pen, armor.cls, dPct);
+      const expDmg = expectedDamage(round.dmg, round.pen, armor.cls, dPct);
+
+      // shots to break
+      let cur = dur, shots = 0;
+      while (cur > 0.5 && shots < 80) {
+        const dp = (cur / max) * 100;
+        const { pct: p2 } = penChance(armor.cls, round.pen, dp);
+        cur -= armorDamagePerShot(round.pen, armor.cls, round.armor, armor.material, p2 >= 50);
+        shots++;
+      }
+
+      $('chance').textContent = `${pct.toFixed(1)}%`;
+      $('chance').style.color = pct >= 80 ? 'var(--green)' : pct >= 40 ? 'var(--amber)' : 'var(--red)';
+      $('out-a').textContent = a.toFixed(1);
+      $('out-pen').textContent = String(round.pen);
+      $('out-dur').textContent = `${dur}/${max} (${dPct.toFixed(0)}%)`;
+      $('out-break').textContent = shots >= 80 ? '80+' : `${shots} shots`;
+      $('out-dmg').textContent = `${(round.dmg * mult).toFixed(0)} (${(mult * 100).toFixed(0)}%)`;
+      $('out-exp').textContent = `${expDmg.toFixed(1)} dmg/hit`;
+    }
+
+    calSel.addEventListener('input', () => { fillRounds(); compute(); });
+    roundSel.addEventListener('input', compute);
+    armorSel.addEventListener('input', () => {
+      const a = getArmor();
+      if (a) durInput.value = String(a.durability);
+      compute();
+    });
+    durInput.addEventListener('input', compute);
+
+    fillRounds();
+    // set default armor to a class 4 mid-tier if present
+    const def = ARMOR.find((a) => a.kind === 'b' && a.cls === 4 && a.durability);
+    if (def) {
+      armorSel.value = 'b:' + def.name;
+      durInput.value = String(def.durability);
+    }
+    compute();
+  </script>
+</Base>

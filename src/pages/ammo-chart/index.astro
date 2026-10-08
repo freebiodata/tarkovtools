@@ -1,0 +1,200 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Faq from '../../components/Faq.astro';
+import TrustBlock from '../../components/TrustBlock.astro';
+import { site } from '../../data/site';
+import { ammoByCaliber, caliberOrder } from '../../data/ammo';
+
+const title = 'Tarkov Ammo Chart: Damage, Penetration & Armor Data';
+const description =
+  'Complete Tarkov ammo chart: damage, penetration power, armor damage % and speed for every caliber. Filter, sort, and compare rounds. Free, no sign-up.';
+
+const jsonLd = [
+  {
+    '@type': 'WebApplication',
+    '@id': `${site.url}/ammo-chart/#app`,
+    name: 'Tarkov Ammo Chart',
+    url: `${site.url}/ammo-chart/`,
+    description:
+      'Sortable, filterable ammo chart for Escape from Tarkov with damage, penetration, armor damage and speed stats.',
+    applicationCategory: 'GameApplication',
+    operatingSystem: 'Any',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  },
+];
+
+const breadcrumbs = [
+  { name: 'Home', href: '/' },
+  { name: 'All tools', href: '/tools/' },
+  { name: 'Ammo chart' },
+];
+
+const faq = [
+  {
+    q: 'What do the ammo stats mean?',
+    a: '<strong>Damage</strong> is the health damage dealt to an unarmored target. <strong>Penetration power</strong> decides whether the round defeats armor (higher is better, compare against the <a href="/penetration-calculator/">penetration calculator</a>). <strong>Armor damage %</strong> is how fast the round destroys the armor it hits. <strong>Speed</strong> affects lead/drop at range.',
+  },
+  {
+    q: 'Which ammo should I use?',
+    a: 'It depends on who you expect: high-pen rounds (BP, BS, M995, M61) for armored players; high-damage rounds (HP, RIP) for unarmored. The <a href="/ammo-solver/">ammo solver</a> ranks rounds for a specific armor class.',
+  },
+  {
+    q: 'Is this data current?',
+    a: 'Data compiled 2026-10-08 from the community wiki ballistics table, cross-checked against known values. Tarkov patches change stats; we update with changelog entries. Exact in-game behavior also depends on hit location and armor zones.',
+  },
+  {
+    q: 'Why do some calibers show fewer rounds?',
+    a: 'We include the rounds in the wiki ballistics table at snapshot time. Some event/limited ammo types (and some legacy rounds no longer obtainable) are excluded rather than shown stale.',
+  },
+];
+---
+
+<Base
+  title={title}
+  description={description}
+  jsonLd={jsonLd}
+  breadcrumbs={breadcrumbs}
+  canonical="/ammo-chart/"
+>
+  <div class="wrap">
+    <Breadcrumbs items={breadcrumbs} />
+
+    <div class="hero">
+      <h1>Ammo Chart</h1>
+      <p class="value-line">
+        175 rounds across 29 calibers: damage, penetration power, armor damage and speed in one
+        filterable table. The data behind every TarkovTools calculator.
+      </p>
+      <ul class="trust-microline">
+        <li class="badge badge-green">Runs in your browser</li>
+        <li class="badge">175 rounds · 29 calibers</li>
+        <li class="badge badge-amber">Snapshot 2026-10-08</li>
+      </ul>
+    </div>
+
+    <section class="tool" aria-labelledby="tool-heading">
+      <h2 id="tool-heading" class="visually-hidden">Ammo chart tool</h2>
+
+      <div class="tool-grid cols-3">
+        <div class="field">
+          <label for="cal">Caliber</label>
+          <select id="cal">
+            <option value="all" selected>All calibers</option>
+            {caliberOrder.map((c) => (
+              <option value={c}>{c} ({ammoByCaliber[c].length} rounds)</option>
+            ))}
+          </select>
+        </div>
+        <div class="field">
+          <label for="search">Search round</label>
+          <input type="text" id="search" placeholder="e.g. BP, M995, AP..." />
+        </div>
+        <div class="field">
+          <label for="minpen">Min penetration</label>
+          <input type="number" id="minpen" inputmode="numeric" min="0" max="80" step="1" value="0" />
+        </div>
+      </div>
+
+      <div class="result-panel" style="min-height:auto">
+        <div class="small muted" id="count">-</div>
+      </div>
+
+      <div class="table-wrap" style="margin-top:16px;max-height:640px;overflow:auto">
+        <table id="ammo-table">
+          <thead>
+            <tr>
+              <th>Round</th>
+              <th>Caliber</th>
+              <th class="num">Damage</th>
+              <th class="num">Pen</th>
+              <th class="num">Armor dmg %</th>
+              <th class="num">Speed m/s</th>
+            </tr>
+          </thead>
+          <tbody id="rows">
+            <tr><td colspan="6" class="small muted">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="how">
+      <h2 id="how">How to read this chart</h2>
+      <p>
+        Penetration power is compared against armor classes in the
+        <a href="/penetration-calculator/">penetration calculator</a>: as a rule of thumb a round needs
+        roughly <code>10 × armor class + a few</code> penetration to reliably defeat a full-durability
+        plate of that class. Armor damage % matters for sustained fights, high armor-damage rounds chew
+        through plates even when they bounce.
+      </p>
+      <p class="small muted">
+        Column definitions and the data source: <a href="/methodology/">methodology page</a>.
+      </p>
+    </section>
+
+    <Faq items={faq} />
+
+    <TrustBlock>
+      <p class="mb-0">
+        <strong>Data note:</strong> snapshot 2026-10-08 from the community ballistics table, spot-checked
+        against known values (BS 45/54, M995 42/53, M80 80/43). Corrections with a source:
+        <a href="/contact/">tell us</a>.
+      </p>
+    </TrustBlock>
+
+    <section class="section" aria-labelledby="related">
+      <h2 id="related">Related tools</h2>
+      <ul class="related-grid" style="list-style:none;padding:0">
+        <li><a class="tool-card" href="/penetration-calculator/"><span class="tc-title">Penetration Calculator</span><p class="tc-desc">Round vs armor: exact pen chance from the datamined formula.</p></a></li>
+        <li><a class="tool-card" href="/ammo-solver/"><span class="tc-title">Ammo Solver</span><p class="tc-desc">"What do I bring?" ranked for the armor you expect.</p></a></li>
+      </ul>
+    </section>
+  </div>
+
+  <script define:vars={{ AMMO: ammoByCaliber, ORDER: caliberOrder }}>
+    const $ = (id) => document.getElementById(id);
+
+    const flat = [];
+    for (const cal of Object.keys(AMMO)) {
+      for (const r of AMMO[cal]) {
+        flat.push({ ...r, cal });
+      }
+    }
+    // sort by caliber order then pen desc
+    flat.sort((a, b) => {
+      const ai = ORDER.indexOf(a.cal); const bi = ORDER.indexOf(b.cal);
+      return (ai === bi ? 0 : (ai - bi)) || (b.pen - a.pen);
+    });
+
+    function penClass(pen) {
+      if (pen >= 55) return 'pen-high';
+      if (pen >= 35) return 'pen-mid';
+      return 'pen-low';
+    }
+
+    function render() {
+      const cal = $('cal').value;
+      const q = $('search').value.trim().toLowerCase();
+      const minpen = parseInt($('minpen').value) || 0;
+      const rows = flat.filter((r) =>
+        (cal === 'all' || r.cal === cal) &&
+        (!q || r.name.toLowerCase().includes(q)) &&
+        r.pen >= minpen
+      );
+      $('count').textContent = `${rows.length} rounds shown`;
+      $('rows').innerHTML = rows.map((r) => `
+        <tr>
+          <td><strong>${r.name}</strong></td>
+          <td class="small muted">${r.cal}</td>
+          <td class="num">${r.dmg}</td>
+          <td class="num ${penClass(r.pen)}">${r.pen}</td>
+          <td class="num">${r.armor}%</td>
+          <td class="num">${r.speed ?? '-'}</td>
+        </tr>`).join('');
+    }
+
+    ['cal', 'search', 'minpen'].forEach((id) => $(id).addEventListener('input', render));
+    render();
+  </script>
+</Base>

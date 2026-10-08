@@ -1,0 +1,104 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { site } from '../../data/site';
+
+const title = 'Methodology: Formulas & Data Sources | TarkovTools';
+const description =
+  'The penetration formula, armor damage model and data sources behind TarkovTools: datamined community math, validated, with published limits.';
+
+const breadcrumbs = [
+  { name: 'Home', href: '/' },
+  { name: 'Methodology' },
+];
+---
+
+<Base title={title} description={description} breadcrumbs={breadcrumbs} canonical="/methodology/">
+  <div class="wrap-narrow">
+    <Breadcrumbs items={breadcrumbs} />
+
+    <h1>Methodology &amp; data sources</h1>
+    <p class="lead">
+      Every formula and dataset behind the calculators, so you can verify or replicate any result.
+    </p>
+    <p class="small muted">Last updated: 08 Oct 2026</p>
+
+    <section class="section">
+      <h2 id="penetration">The penetration formula</h2>
+      <p>We use the community-datamined model, identical in independent open-source projects:</p>
+      <p><code>A = (121 − 5000 ÷ (45 + 2 × durability%)) × armorClass ÷ 10</code></p>
+      <ul>
+        <li><strong>pen ≥ A</strong> → penetrates: <code>chance = 100 + pen ÷ (0.9A − pen)</code> %</li>
+        <li><strong>A − 15 &lt; pen &lt; A</strong> → partial: <code>chance = 0.4 × (A − pen − 15)²</code> %</li>
+        <li><strong>pen ≤ A − 15</strong> → no penetration</li>
+      </ul>
+      <p class="small muted">
+        Validation examples the model reproduces: M995 (pen 53) vs class 5 full = ~93%; 7.62x39 BP (pen 47)
+        vs class 4 full = ~96%; M855 (pen 31) vs class 4 full = ~13%.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2 id="armor-damage">Armor damage model</h2>
+      <p>
+        Durability damage per hit (used for "shots to break"):
+      </p>
+      <p><code>dmg = max(1, pen × (armorDmg% ÷ 100) × clamp(pen ÷ class × 10, lo..hi) × destructibility)</code></p>
+      <p>
+        with <code>clamp = 0.5–0.9</code> for penetrating hits and <code>0.6–1.1</code> for blocked hits;
+        destructibility by material: Aramid 0.19, UHMWPE 0.34, Combined 0.375, Titan 0.41, Aluminium 0.45,
+        ArmoredSteel 0.53, Ceramic 0.55, Glass 0.6 (community datamining values).
+      </p>
+    </section>
+
+    <section class="section">
+      <h2 id="damage">Penetrating damage reduction</h2>
+      <p>
+        When a round penetrates, damage is reduced by the model factor
+        <code>median(0.6, pen ÷ (A + 12), 1)</code>, i.e. between 0% and 40% reduction, matching the
+        in-game behaviour description ("0% to 40% less damage").
+      </p>
+    </section>
+
+    <section class="section">
+      <h2 id="data">Data sources</h2>
+      <ul>
+        <li><strong>Ammo stats (175 rounds, 29 calibers):</strong> Escape from Tarkov Wiki ballistics table, fetched 2026-10-08 via reader; spot-validated against known values (BS 45 dmg / 54 pen; M995 42/53; M80 80/43; LPS 81/42).</li>
+        <li><strong>Armor list (45 body armors, 38 plates):</strong> tarkovdb.gg armor chart, fetched 2026-10-08; classes and base durability.</li>
+        <li><strong>Formulas:</strong> community-datamined implementation, cross-validated across independent open-source projects (cited in the investigation; identical math).</li>
+      </ul>
+      <p class="small muted">
+        All data is a snapshot; Tarkov patches change values. Updates ship with a changelog entry and the
+        snapshot date on affected pages.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2 id="limits">Known limits (honest list)</h2>
+      <ul>
+        <li><strong>Single-layer model:</strong> multi-plate rigs, soft armor under plates, and zone splits are not simulated per-zone.</li>
+        <li><strong>Helmets:</strong> ricochet and helmet-specific quirks are not modeled; use torso values for helmet approximations only.</li>
+        <li><strong>Pens deviation:</strong> the game applies deviation to penetration power; we use the nominal value (standard practice).</li>
+        <li><strong>Damage falloff:</strong> distance reduces speed and (slightly) damage/pen; the calculators use point-blank values.</li>
+        <li><strong>Blunt damage:</strong> estimated with the community medians; treat as indicative, not exact.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2 id="testing">Testing &amp; corrections</h2>
+      <ol>
+        <li>Every formula has hand-verified test cases (see the repo's test suite) that must pass before deploy.</li>
+        <li>Spot validation against known community values is part of the data pipeline.</li>
+        <li>Corrections: <a href="/contact/">report with a source</a>; confirmed fixes ship with a changelog entry.</li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <h2 id="ai">AI use disclosure</h2>
+      <p>
+        Pages are drafted with tooling assistance and reviewed before publishing; every stat and formula is
+        verified against the sources above. No invented numbers appear on this site.
+      </p>
+    </section>
+  </div>
+</Base>

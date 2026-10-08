@@ -1,0 +1,57 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { site } from '../../data/site';
+
+const title = 'Guides: Tarkov Ballistics & Combat Math | TarkovTools';
+const description =
+  'Practical Tarkov guides: penetration explained, ammo trade-offs, and how to plan loadouts with math instead of vibes. Pairs with our calculators.';
+
+const breadcrumbs = [
+  { name: 'Home', href: '/' },
+  { name: 'Guides' },
+];
+
+const guides = [
+  {
+    href: '/guides/penetration-explained/',
+    title: 'Penetration explained',
+    desc: 'Armor classes, the threshold formula, durability curves and the ammo trade-off triangle.',
+  },
+];
+---
+
+<Base title={title} description={description} breadcrumbs={breadcrumbs} canonical="/guides/">
+  <div class="wrap">
+    <Breadcrumbs items={breadcrumbs} />
+
+    <div class="hero">
+      <h1>Guides</h1>
+      <p class="value-line">
+        Combat math without the spreadsheet: short explainers that pair with the calculators.
+      </p>
+    </div>
+
+    <section class="section" aria-labelledby="list">
+      <h2 id="list" class="visually-hidden">All guides</h2>
+      <ul class="tool-cards">
+        {guides.map((g) => (
+          <li>
+            <a class="tool-card" href={g.href}>
+              <span class="tc-title">{g.title}</span>
+              <p class="tc-desc">{g.desc}</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="soon">
+      <h2 id="soon">In the works</h2>
+      <p class="lead">
+        Coming next: armor economics (repair costs vs protection) and distance/falloff effects. Want a
+        topic covered? <a href="/contact/">Tell us</a>.
+      </p>
+    </section>
+  </div>
+</Base>

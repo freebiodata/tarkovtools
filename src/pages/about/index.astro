@@ -1,0 +1,73 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { site } from '../../data/site';
+
+const title = 'About TarkovTools: Who We Are & Why These Tools Exist';
+const description =
+  'TarkovTools is an independent fan toolset for Escape from Tarkov: ballistics charts, penetration maths, loadout tools. Free and honest.';
+
+const breadcrumbs = [
+  { name: 'Home', href: '/' },
+  { name: 'About' },
+];
+---
+
+<Base title={title} description={description} breadcrumbs={breadcrumbs} canonical="/about/">
+  <div class="wrap-narrow">
+    <Breadcrumbs items={breadcrumbs} />
+
+    <h1>About TarkovTools</h1>
+    <p class="lead">
+      Ballistics answers for raiders who want numbers, not vibes: exact ammo data, honest penetration
+      models, and a planner that tells you what to actually load.
+    </p>
+
+    <section class="section">
+      <h2 id="why">Why this site exists</h2>
+      <p>
+        Ammo in Tarkov is a spreadsheet game disguised as a shooter: dozens of rounds across nine
+        calibers, penetration values that decide fights before they start, and armor classes that make
+        half of your stash useless against the wrong opponent. The data exists (tarkov.dev's API is
+        excellent), but turning it into a decision ("what do I bring to this raid") still takes tabs,
+        spreadsheets and guesswork.
+      </p>
+      <p>
+        TarkovTools compresses that into three tools: the chart (browse), the calculator (penetration
+        vs armor), and the solver (best round for your situation).
+      </p>
+    </section>
+
+    <section class="section">
+      <h2 id="how">How the tools are built &amp; tested</h2>
+      <ul>
+        <li><strong>Data from tarkov.dev.</strong> Ammo and armor stats come from the community's open tarkov.dev dataset, the same source that powers most modern Tarkov tools; compile notes on the <a href="/methodology/">methodology page</a>.</li>
+        <li><strong>Documented model, published limits.</strong> Penetration maths follows the community model with its approximations stated openly, no hidden fudge factors.</li>
+        <li><strong>Client-side.</strong> No accounts, no uploads, works offline once loaded.</li>
+        <li><strong>Corrections welcome.</strong> If a stat is wrong or a patch changed the maths, <a href="/contact/">tell us</a>.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2 id="money">How the site makes money</h2>
+      <p>
+        Right now: nothing. TarkovTools is independent and self-funded. Any future sponsorships will be
+        clearly labelled and never affect data or recommendations.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2 id="people">Who runs it</h2>
+      <p>
+        A small crew of Tarkov veterans and software engineers. We have been killed by every ammo type
+        in this game and have opinions about all of them.
+      </p>
+      <p class="small muted">
+        For corrections: <a href="/contact/">contact page</a> or {site.email}.
+      </p>
+      <p class="small muted">
+        TarkovTools is an unofficial fan project, not affiliated with Battlestate Games.
+      </p>
+    </section>
+  </div>
+</Base>

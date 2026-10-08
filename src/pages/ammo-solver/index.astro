@@ -1,0 +1,241 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Faq from '../../components/Faq.astro';
+import TrustBlock from '../../components/TrustBlock.astro';
+import { site } from '../../data/site';
+import { ammoByCaliber, caliberOrder } from '../../data/ammo';
+
+const title = 'Tarkov Ammo Solver: Best Round for the Job';
+const description =
+  'Rank every Tarkov round for your target: armor class, durability, caliber. "What do I bring?" answered with the datamined penetration model. Free.';
+
+const jsonLd = [
+  {
+    '@type': 'WebApplication',
+    '@id': `${site.url}/ammo-solver/#app`,
+    name: 'Tarkov Ammo Solver',
+    url: `${site.url}/ammo-solver/`,
+    description:
+      'Ranks ammunition for Escape from Tarkov based on expected target armor class and durability.',
+    applicationCategory: 'GameApplication',
+    operatingSystem: 'Any',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  },
+];
+
+const breadcrumbs = [
+  { name: 'Home', href: '/' },
+  { name: 'All tools', href: '/tools/' },
+  { name: 'Ammo solver' },
+];
+
+const faq = [
+  {
+    q: 'What does the solver actually rank?',
+    a: 'Every round in a caliber (or all calibers) is scored against your stated target: penetration chance at full durability, shots-to-break, and expected damage per hit while retaining bullets. The result table shows each round on all three axes so you can pick for your priorities, first-shot kill, armor shredding, or budget.',
+  },
+  {
+    q: 'Pen chance vs shots-to-break, which matters more?',
+    a: 'Depends on engagement style. High-pen rounds win first contact (bolt actions, careful aim). High-armor-damage rounds win spray downs, they chew the plate so your later rounds (and your teammate\'s) penetrate. The solver notably includes rounds with lower pen but strong armor damage when shots-to-break is your goal.',
+  },
+  {
+    q: 'Why do budget rounds still show up?',
+    a: 'Because armor damage and cost matter. A cheap round with decent armor damage can be the correct answer against mid-tier kits when you are spraying; the solver shows the trade-offs instead of hiding them behind a single score.',
+  },
+  {
+    q: 'What about leg meta / unarmored targets?',
+    a: 'Set the armor class to "none" and the ranking flips to raw damage, which is exactly the leg-meta logic: the highest-damage cheap rounds win when nothing is armored. The solver covers both cases in one place.',
+  },
+];
+---
+
+<Base
+  title={title}
+  description={description}
+  jsonLd={jsonLd}
+  breadcrumbs={breadcrumbs}
+  canonical="/ammo-solver/"
+>
+  <div class="wrap">
+    <Breadcrumbs items={breadcrumbs} />
+
+    <div class="hero">
+      <h1>Ammo Solver</h1>
+      <p class="value-line">
+        "What do I load for this raid?" Set the target you expect, armor class, durability, caliber,
+        and every round gets ranked on penetration, armor shredding and expected damage.
+      </p>
+      <ul class="trust-microline">
+        <li class="badge badge-green">Datamined model</li>
+        <li class="badge">175 rounds covered</li>
+        <li class="badge badge-amber">Free · No sign-up</li>
+      </ul>
+    </div>
+
+    <section class="tool" aria-labelledby="tool-heading">
+      <h2 id="tool-heading" class="visually-hidden">Ammo solver tool</h2>
+
+      <div class="tool-grid cols-3">
+        <div class="field">
+          <label for="expect">Expected target armor</label>
+          <select id="expect">
+            <option value="none">Unarmored (leg meta)</option>
+            <option value="2">Class 2</option>
+            <option value="3">Class 3</option>
+            <option value="4" selected>Class 4 (common)</option>
+            <option value="5">Class 5</option>
+            <option value="6">Class 6 (heavy)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="dur">Target durability %</label>
+          <input type="number" id="dur" inputmode="numeric" min="0" max="100" step="5" value="100" />
+          <span class="helper">Damaged plates protect less; try 70% for late-raid.</span>
+        </div>
+        <div class="field">
+          <label for="cal-filter">Caliber</label>
+          <select id="cal-filter">
+            <option value="all" selected>All calibers (top rounds)</option>
+            {caliberOrder.map((c) => (
+              <option value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div class="result-panel" style="min-height:auto">
+        <div class="small muted" id="summary">-</div>
+      </div>
+
+      <div class="table-wrap" style="margin-top:16px;max-height:600px;overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th class="num">#</th>
+              <th>Round</th>
+              <th>Caliber</th>
+              <th class="num">Pen chance</th>
+              <th class="num">Shots to break</th>
+              <th class="num">Expected dmg/hit</th>
+            </tr>
+          </thead>
+          <tbody id="rows"><tr><td colspan="6" class="small muted">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="how">
+      <h2 id="how">How the ranking works</h2>
+      <p>
+        For every round: <strong>pen chance</strong> comes from the datamined formula at your target
+        durability; <strong>shots to break</strong> simulates wearing the plate down with that round's
+        production armor damage; <strong>expected damage per hit</strong> blends penetrations (with the
+        reduction factor) and blunt damage. Sort priority is penetration chance, with armor shredding
+        deciding ties, exactly the order the model considers for first contact.
+      </p>
+      <p class="small muted">
+        Full model documentation: <a href="/methodology/">methodology page</a>.
+      </p>
+    </section>
+
+    <Faq items={faq} />
+
+    <TrustBlock>
+      <p class="mb-0">
+        <strong>Practical note:</strong> top-tier rounds cost 3–10× budget rounds. The solver shows the
+        full trade-off list so you can decide if the marginal penetration is worth the price for your
+        raid type.
+      </p>
+    </TrustBlock>
+
+    <section class="section" aria-labelledby="related">
+      <h2 id="related">Related tools</h2>
+      <ul class="related-grid" style="list-style:none;padding:0">
+        <li><a class="tool-card" href="/penetration-calculator/"><span class="tc-title">Penetration Calculator</span><p class="tc-desc">Deep-dive one round vs one armor.</p></a></li>
+        <li><a class="tool-card" href="/ammo-chart/"><span class="tc-title">Ammo Chart</span><p class="tc-desc">The full dataset: all stats, all rounds.</p></a></li>
+      </ul>
+    </section>
+  </div>
+
+  <script define:vars={{ AMMO: ammoByCaliber, ORDER: caliberOrder }}>
+    const $ = (id) => document.getElementById(id);
+
+    function factorA(cls, d) {
+      const dd = Math.max(0, Math.min(100, d));
+      return (121 - 5000 / (45 + dd * 2)) * cls * 0.1;
+    }
+    function penChance(cls, pen, d) {
+      if (d <= 0) return 100;
+      const a = factorA(cls, d);
+      if (a <= pen) return Math.min(100, Math.max(0, 100 + pen / (0.9 * a - pen)));
+      if (a - 15 < pen && pen < a) return Math.min(100, Math.max(0, 0.4 * Math.pow(a - pen - 15, 2)));
+      return 0;
+    }
+    const DESTR = { Aramid: 0.1875, UHMWPE: 0.3375, Combined: 0.375, Titan: 0.4125, Aluminium: 0.45, ArmoredSteel: 0.525, Ceramic: 0.55, Glass: 0.6 };
+    // typical plate materials: combined/ceramic/uhmwpe; use 0.375 as neutral default
+    function armorDmgPerShot(pen, cls, armorDmg, penHappened) {
+      const destr = 0.375;
+      const raw0 = (pen / cls) * 10;
+      const clamped = penHappened ? Math.min(Math.max(raw0, 0.5), 0.9) : Math.min(Math.max(raw0, 0.6), 1.1);
+      return Math.max(pen * (armorDmg / 100) * clamped * destr, 1);
+    }
+    function penMult(pen, cls, d) {
+      const a = factorA(cls, d);
+      const arr = [0.6, pen / (a + 12), 1].sort((x, y) => x - y);
+      return arr[1];
+    }
+
+    const flat = [];
+    for (const cal of Object.keys(AMMO)) for (const r of AMMO[cal]) flat.push({ ...r, cal });
+
+    function compute() {
+      const ex = $('expect').value;
+      const durPct = Math.max(0, Math.min(100, parseFloat($('dur').value) || 100));
+      const calFilter = $('cal-filter').value;
+
+      const pool = flat.filter((r) => calFilter === 'all' || r.cal === calFilter);
+
+      let ranked;
+      if (ex === 'none') {
+        // raw damage ranking (leg meta)
+        ranked = pool.map((r) => ({
+          ...r, chance: 100, shots: 1, expDmg: r.dmg, raw: true,
+        })).sort((a, b) => b.dmg - a.dmg || b.pen - a.pen);
+        $('summary').textContent = 'Unarmored target: ranked by raw damage per shot (leg meta logic).';
+      } else {
+        const cls = parseInt(ex);
+        ranked = pool.map((r) => {
+          const chance = penChance(cls, r.pen, durPct);
+          // simulate shots to break from durPct
+          let cur = durPct, shots = 0;
+          while (cur > 0.5 && shots < 80) {
+            const ch = penChance(cls, r.pen, cur);
+            cur -= armorDmgPerShot(r.pen, cls, r.armor, ch >= 50);
+            shots++;
+          }
+          const mult = penMult(r.pen, cls, durPct);
+          const a = factorA(cls, durPct);
+          const arr = [0.2, 1 - 0.03 * (a - r.pen), 1].sort((x, y) => x - y);
+          const blunt = 0.2 * arr[1] * r.dmg;
+          const expDmg = r.dmg * mult * (chance / 100) + blunt * (1 - chance / 100);
+          return { ...r, chance, shots: shots >= 80 ? null : shots, expDmg };
+        }).sort((a, b) => b.chance - a.chance || (a.shots ?? 99) - (b.shots ?? 99));
+      }
+
+      const top = ranked.slice(0, 20);
+      $('rows').innerHTML = top.map((r, i) => `
+        <tr>
+          <td class="num">${i + 1}</td>
+          <td><strong>${r.name}</strong></td>
+          <td class="small muted">${r.cal}</td>
+          <td class="num" style="color:${r.chance >= 80 ? 'var(--green)' : r.chance >= 40 ? 'var(--amber)' : 'var(--red)'}">${r.chance.toFixed(0)}%</td>
+          <td class="num">${r.shots == null ? '80+' : (ex === 'none' ? '-' : r.shots + ' shots')}</td>
+          <td class="num">${r.expDmg.toFixed(1)}</td>
+        </tr>`).join('');
+    }
+
+    ['expect', 'dur', 'cal-filter'].forEach((id) => $(id).addEventListener('input', compute));
+    compute();
+  </script>
+</Base>

@@ -1,0 +1,100 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolCard from '../components/ToolCard.astro';
+import { site } from '../data/site';
+
+const title = 'TarkovTools: Free Ammo & Armor Calculators';
+const description =
+  'Free Tarkov tools: complete ammo chart, exact penetration calculator with the datamined formula, and an ammo solver. No sign-up, client-side math.';
+
+const tools = [
+  {
+    href: '/penetration-calculator/',
+    title: 'Penetration Calculator',
+    desc: 'Round vs armor, exact chance: the datamined formula with durability modeling and shots-to-break.',
+    badge: 'Most used',
+  },
+  {
+    href: '/ammo-chart/',
+    title: 'Ammo Chart',
+    desc: '175 rounds, 29 calibers: damage, pen, armor damage and speed in one filterable table.',
+  },
+  {
+    href: '/ammo-solver/',
+    title: 'Ammo Solver',
+    desc: '"What do I bring?" ranked against the armor class you expect. Includes the leg-meta view.',
+  },
+];
+---
+
+<Base title={title} description={description} canonical="/">
+  <div class="wrap">
+    <div class="hero" style="padding-top:38px">
+      <h1>Ballistics answers for your next raid</h1>
+      <p class="value-line" style="font-size:1.08rem">
+        Will it pen? What do I bring? Answer both in seconds: the complete ammo dataset, the exact
+        penetration model, and a solver that ranks every round for your target.
+        <strong>Free, no sign-up, everything runs in your browser.</strong>
+      </p>
+      <ul class="trust-microline">
+        <li class="badge badge-green">Datamined formula, validated</li>
+        <li class="badge">175 rounds · 83 armors</li>
+        <li class="badge badge-amber">Snapshot 2026-10-08</li>
+      </ul>
+      <div class="result-actions" style="margin-top:20px">
+        <a class="btn btn-primary" href="/penetration-calculator/" style="padding:11px 22px;font-size:1rem">
+          Check a round vs armor →
+        </a>
+        <a class="btn btn-secondary" href="/tools/" style="padding:11px 22px;font-size:1rem">Browse all tools</a>
+      </div>
+    </div>
+
+    <section class="section" aria-labelledby="tools-heading">
+      <h2 id="tools-heading">The toolkit</h2>
+      <ul class="tool-cards">
+        {tools.map((t) => (
+          <ToolCard href={t.href} title={t.title} desc={t.desc} badge={t.badge} badgeClass="badge-amber" />
+        ))}
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="why">
+      <h2 id="why">Why TarkovTools</h2>
+      <div class="card">
+        <ul style="margin:0">
+          <li><strong>Real math, not guesswork.</strong> The penetration model is the community-datamined formula, cross-validated in independent open-source projects and calibrated against known values (M995 vs class 5 ≈ 93%).</li>
+          <li><strong>Honest limits.</strong> Single-plate model, helmet quirks and damage falloff are documented on the <a href="/methodology/">methodology page</a>, we tell you what the numbers cannot capture.</li>
+          <li><strong>Everything client-side.</strong> No accounts, no uploads, works offline once loaded.</li>
+          <li><strong>Data with a date.</strong> Every dataset carries its snapshot date and update policy.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="guides-heading">
+      <h2 id="guides-heading">Learn the mechanics</h2>
+      <ul class="related-grid" style="list-style:none;padding:0">
+        <li>
+          <a class="tool-card" href="/guides/penetration-explained/">
+            <span class="tc-title">Penetration explained</span>
+            <p class="tc-desc">The threshold rule, the durability curve, and the ammo trade-off triangle.</p>
+          </a>
+        </li>
+        <li>
+          <a class="tool-card" href="/guides/">
+            <span class="tc-title">All guides →</span>
+            <p class="tc-desc">Combat math without the spreadsheet.</p>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="about-summ">
+      <h2 id="about-summ">Who runs this site</h2>
+      <p class="lead">
+        TarkovTools is an independent fan project by long-time raiders. <a href="/about/">Read the full
+        story</a> or check the <a href="/methodology/">methodology</a>. Not affiliated with Battlestate
+        Games.
+      </p>
+    </section>
+  </div>
+</Base>

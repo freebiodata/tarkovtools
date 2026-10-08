@@ -1,0 +1,128 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import Faq from '../../../components/Faq.astro';
+import TrustBlock from '../../../components/TrustBlock.astro';
+import { site } from '../../../data/site';
+
+const title = 'Tarkov Penetration Explained: Armor Classes & Rounds';
+const description =
+  'How penetration really works in Tarkov: the threshold formula, why durability decides fights, and what to load for each target armor.';
+
+const breadcrumbs = [
+  { name: 'Home', href: '/' },
+  { name: 'Guides', href: '/guides/' },
+  { name: 'Penetration explained' },
+];
+
+const faq = [
+  {
+    q: 'What penetration value do I need for class 4, 5, 6?',
+    a: 'Rule of thumb: <strong>roughly 10 × class + 5–10</strong> for reliable penetration at full durability, about 45+ for class 4, 55+ for class 5, 65+ for class 6. Between class×10 and that, you are in the partial-chance band; below, you are tickling. The <a href="/penetration-calculator/">calculator</a> gives exact numbers for your round.',
+  },
+  {
+    q: 'High pen or high damage, which round do I pick?',
+    a: 'High pen for armored first-contact fights (bolt-action, DMR). High damage for unarmored or when you can spray: sustained fire with high-armor-damage rounds breaks plates, then everything pens. The <a href="/ammo-solver/">solver</a> ranks both styles.',
+  },
+  {
+    q: 'Why did my shots "not register" on an armored target?',
+    a: 'They registered as blunt: the round failed the penetration roll and only a small blunt fraction passed through. That is why low-pen rounds feel useless against class 5–6 even when damage numbers look fine.',
+  },
+  {
+    q: 'Does shooting a damaged plate make my rounds penetrate?',
+    a: 'Yes, that is the core mechanic. Lower durability lowers the threshold A, raising penetration chance for the same round. High-armor-damage rounds are valuable precisely because they open the plate for the next shots.',
+  },
+];
+---
+
+<Base
+  title={title}
+  description={description}
+  breadcrumbs={breadcrumbs}
+  canonical="/guides/penetration-explained/"
+  type="article"
+  jsonLd={[
+    {
+      '@type': 'Article',
+      headline: 'Tarkov Penetration Explained: Armor Classes & Rounds',
+      datePublished: '2026-10-08',
+      dateModified: '2026-10-08',
+      author: { '@type': 'Organization', name: site.name, url: `${site.url}/about/` },
+    },
+  ]}
+>
+  <div class="wrap-narrow">
+    <Breadcrumbs items={breadcrumbs} />
+
+    <h1>Penetration explained</h1>
+    <p class="lead">
+      Every armor fight in Tarkov is one math problem: does this round beat this plate right now? Learn
+      the rule of thumb, the durability curve, and the ammo trade-offs, then use the calculators for
+      exact numbers.
+    </p>
+    <p class="small muted">Published 08 Oct 2026 · By the TarkovTools team</p>
+
+    <section class="section">
+      <h2 id="answer">Quick answer</h2>
+      <p>
+        Reliability threshold ≈ <code>10 × armor class (+ a few)</code>. Class 4 full plate soaks rounds
+        under ~40 pen; class 6 under ~60 pen. Durability changes everything: below 50% the thresholds drop
+        and mid-tier rounds start punching. Check any pairing in the
+        <a href="/penetration-calculator/">penetration calculator</a>.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2 id="threshold">The threshold, explained without the formula</h2>
+      <p>
+        The game computes a threshold A from the armor's class and remaining durability. Compare your
+        round's pen to A:
+      </p>
+      <ul>
+        <li><strong>Well above A:</strong> near-certain penetration, your shot punches and damages normally (minus a small reduction).</li>
+        <li><strong>Just above A:</strong> high but not certain, most shots pen, a few bounce.</li>
+        <li><strong>Just below A:</strong> the partial band, occasional penetrations at low chance, increasing as the plate wears.</li>
+        <li><strong>Well below A:</strong> never penetrates; only blunt damage. This is why RIP rounds are for legs, not class 6.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2 id="durability">Durability: the hidden second variable</h2>
+      <p>
+        A 35% durability class 5 plate is easier to punch than a fresh class 4 in many matchups, the
+        threshold scales with the remaining durability percentage. Spraying a plate with high-armor-damage
+        rounds lowers A until your ammo pens; this is the entire "shred then kill" pattern in one sentence.
+      </p>
+      <p class="small muted">
+        Numbers: a class 5 at 100% has threshold ≈ 50; at 50% ≈ 45. Those few points swing entire ammo
+        loadouts from hopeless to effective.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2 id="tradeoffs">The ammo trade-off triangle</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Style</th><th>Example rounds</th><th>Best for</th><th>Weakness</th></tr></thead>
+          <tbody>
+            <tr><td>High pen, moderate dmg</td><td>BP, BS, M995, M61</td><td>First-contact kills vs armor</td><td>Cost; lower flesh damage once it pens</td></tr>
+            <tr><td>High armor damage</td><td>Some AP/tracer rounds</td><td>Breaking plates for the team</td><td>Slow solo kills</td></tr>
+            <tr><td>High flesh damage</td><td>HP, RIP, buckshot</td><td>Unarmored/leg meta, scavs</td><td>Useless vs class 4+</td></tr>
+            <tr><td>Budget balance</td><td>PS, PP, FMJ</td><td>Early wipe, mixed lobbies</td><td>Falls off vs 5/6</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted" style="margin-top:10px">The <a href="/ammo-solver/">ammo solver</a> ranks actual rounds against your expected target, use it for loadout specifics.</p>
+    </section>
+
+    <Faq items={faq} />
+
+    <TrustBlock>
+      <p class="mb-0">
+        The formula, validation examples and model limits: <a href="/methodology/">methodology page</a>.
+        This guide describes the community-validated model; in-game quirks (deviation, zones) are noted
+        there too.
+      </p>
+    </TrustBlock>
+  </div>
+</Base>

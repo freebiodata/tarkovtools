@@ -1,0 +1,48 @@
+---
+import { site } from '../data/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-cols">
+      <div>
+        <h3>Ballistics</h3>
+        <ul>
+          <li><a href="/ammo-chart/">Ammo chart</a></li>
+          <li><a href="/penetration-calculator/">Penetration calculator</a></li>
+          <li><a href="/ammo-solver/">Ammo solver</a></li>
+          <li><a href="/tools/">All tools</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Learn</h3>
+        <ul>
+          <li><a href="/guides/">Guides</a></li>
+          <li><a href="/guides/penetration-explained/">Penetration explained</a></li>
+          <li><a href="/changelog/">Changelog</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Site</h3>
+        <ul>
+          <li><a href="/about/">About</a></li>
+          <li><a href="/methodology/">Methodology</a></li>
+          <li><a href="/contact/">Contact</a></li>
+          <li><a href="/sitemap/">Sitemap</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Legal</h3>
+        <ul>
+          <li><a href="/privacy/">Privacy</a></li>
+          <li><a href="/terms/">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© {year} {site.name}. Free tools, no sign-up.</span>
+      <span>Unofficial fan tool. Not affiliated with Battlestate Games. All calculations run in your browser.</span>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,56 @@
+---
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { site } from '../../data/site';
+
+const title = 'Changelog: What Changed and When | TarkovTools';
+const description = 'Real, dated updates to TarkovTools data and calculators. Every entry lists what actually changed.';
+
+const breadcrumbs = [
+  { name: 'Home', href: '/' },
+  { name: 'Changelog' },
+];
+
+const entries = [
+  {
+    date: '2026-10-08',
+    title: 'Initial release',
+    items: [
+      'Launched 3 tools: ammo chart, armor penetration calculator, ammo solver.',
+      'Compiled ammo and armor data from the tarkov.dev community dataset.',
+      'Documented the penetration model and its approximations on the methodology page.',
+      'All maths client-side; no accounts, no uploads.',
+    ],
+  },
+];
+---
+
+<Base title={title} description={description} breadcrumbs={breadcrumbs} canonical="/changelog/">
+  <div class="wrap-narrow">
+    <Breadcrumbs items={breadcrumbs} />
+
+    <h1>Changelog</h1>
+    <p class="lead">
+      What actually changed, when, and why. Data refreshes land here with the patch reference.
+    </p>
+
+    {entries.map((e) => (
+      <section class="section">
+        <h2 id={e.date} style="margin-top:0">{e.date}: {e.title}</h2>
+        <ul>
+          {e.items.map((i) => <li>{i}</li>)}
+        </ul>
+      </section>
+    ))}
+
+    <section class="section">
+      <h2 id="planned">Planned</h2>
+      <ul>
+        <li>Armor planner (durability/repair economics across raid kits).</li>
+        <li>Quest item tracker.</li>
+        <li>Hideout profit calculator.</li>
+      </ul>
+      <p class="small muted">Plans are not promises; entries move to a dated release when they ship.</p>
+    </section>
+  </div>
+</Base>
